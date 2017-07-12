@@ -9,6 +9,7 @@ router.get('/', function(req, res, next) {
 
 router.post('/upload', function (req, res, next) {
   var form = new formidable.IncomingForm()
+  form.uploadDir = './';
   form.parse(req, function (err, fields, files) {
     console.log(files)
   })

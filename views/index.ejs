@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/static/stylesheets/style.css' />
+  </head>
+  <body>
+    <!--TODO 复刻上传样式-->
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+    <input id="file" type="file" multiple/>
+    <script src="/static/javascripts/upload.js"></script>
+    <script>
+      window.onload = function () {
+        var fileObj = document.querySelector('#file')
+        fileObj.onchange = function () {
+          for (var i = 0, len = fileObj.files.length; i < len; i++) {
+            uploadManager.add(i, '/upload', fileObj.files[i], function () {
+              console.log(i)
+            })
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
