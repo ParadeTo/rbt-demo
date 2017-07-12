@@ -2,7 +2,11 @@
  * Created by ayou on 17/7/11.
  */
 
-var Upload = function () {
+var Upload = function (options) {
+  // 内部状态
+  // 每片大小，200kb
+  this.chunkSize = options.chunkSize || 200 * 1024
+
   // 外部状态
   this.url = null
   this.onSuccess = null
@@ -15,32 +19,43 @@ Upload.prototype.upload = function (id) {
   // 设置外部状态
   uploadManager.setExternalState(id, this)
 
-  var formData = new FormData()
-  formData.append(this.file.name, this.file)
-  var xhr = new XMLHttpRequest()
-  xhr.open('post', this.url)
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
-      if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
-        self.onSuccess(xhr.responseText)
-      } else {
-        console.log(xhr.status)
+  // 分片上传
+  var chunkCount = Math.ceil(this.file.size / this.chunkSize)
+  for (var i = 0; i < chunkCount; i++) {
+    var start = i * this.chunkSize,
+        end = Math.min(this.file.size, start + this.chunkSize);
+
+    var formData = new FormData()
+    formData.append('date', this.file.slice(start, end))
+    formData.append('name', this.file.name)
+    formData.append('total', chunkCount)
+    formData.append('index', i+1)
+
+    var xhr = new XMLHttpRequest()
+    xhr.open('post', this.url)
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+          self.onSuccess(xhr.responseText)
+        } else {
+          console.log(xhr.status)
+        }
       }
     }
+    xhr.send(formData)
   }
-  xhr.send(formData)
 }
 
 var UploadFactory = (function () {
   var createdFlyWeightObjs = null;
 
   return {
-    create: function () {
+    create: function (options) {
       if (createdFlyWeightObjs) {
         return createdFlyWeightObjs
       }
 
-      return createdFlyWeightObjs = new Upload()
+      return createdFlyWeightObjs = new Upload(options)
     }
   }
 })()
@@ -51,7 +66,7 @@ var uploadManager = (function () {
 
   return {
     add: function (id, url, file, onSuccess) {
-      var flyWeightObj = UploadFactory.create()
+      var flyWeightObj = UploadFactory.create({chunkSize: 1024})
 
       uploadDatabase[id] = {
         url: url,
