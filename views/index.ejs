@@ -2,21 +2,30 @@
 <html>
   <head>
     <title><%= title %></title>
-    <link rel='stylesheet' href='/static/stylesheets/style.css' />
+    <link href="https://cdn.bootcss.com/bulma/0.4.3/css/bulma.min.css" rel="stylesheet">
+    <style>
+      .file-info {
+        justify-content: space-between;
+        margin-bottom: 2px;
+      }
+    </style>
   </head>
-  <body>
-    <!--TODO 复刻上传样式-->
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-    <input id="file" type="file" multiple/>
+  <body style="padding: 2rem;">
+    <h1 style="margin-top: 2rem;" class="has-text-centered title is-2"><%= title %></h1>
+    <div class="container has-text-centered">
+      <label class="button is-primary" for="file">选择文件</label>
+      <input style="display: none" id="file" type="file" multiple/>
+      <div class="box" style="margin-top: 1rem;" id="fileList"></div>
+    </div>
+    <script src="/static/javascripts/event.js"></script>
     <script src="/static/javascripts/upload.js"></script>
     <script>
       window.onload = function () {
         var fileObj = document.querySelector('#file')
         fileObj.onchange = function () {
           for (var i = 0, len = fileObj.files.length; i < len; i++) {
-            uploadManager.add(i, '/upload', fileObj.files[i], function () {
-              console.log(i)
+            uploadManager.add(i, '/upload', fileObj.files[i], function (data) {
+              console.log(data)
             })
           }
         }
